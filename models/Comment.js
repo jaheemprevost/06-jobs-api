@@ -17,7 +17,7 @@ const commentSchema = mongoose.Schema({
     ref: 'Post',
     required: [true, 'Please provide post']
   }
-});
+}, {timestamps: true});
 
 const Comment = mongoose.model('Comment', commentSchema);
 
