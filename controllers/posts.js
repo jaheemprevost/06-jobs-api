@@ -1,6 +1,6 @@
 const Post = require('../models/Post'); 
 const { StatusCodes } = require('http-status-codes');
-const { BadRequestError, NotFoundError } = require('../errors');
+const { BadRequestError, NotFoundError, UnauthenticatedError } = require('../errors');
 
 const getAllPosts = async (req, res) => {
   const posts = await Post.find({}).sort('createdAt');
@@ -14,11 +14,10 @@ const getAllPosts = async (req, res) => {
 
 const getPost = async (req, res) => {
   const {
-    user: {userId}, 
     params: {id: postId}
   } = req;
   
-  const post = await Post.findOne({ _id: postId, createdBy: userId });
+  const post = await Post.findOne({ _id: postId});
 
   if (!post) {
     throw new NotFoundError('Post could not be found');
@@ -41,7 +40,7 @@ const createPost = async (req, res) => {
   req.body.createdBy = req.user.userId;
   
   const { 
-    body: {title, body, createdBy}  
+    body: { title, body, createdBy }  
   } = req;
   
   if (!title || !body) {
@@ -55,19 +54,21 @@ const createPost = async (req, res) => {
  
 const updatePost = async (req, res) => {
   const {
-    user: {userId},
-    body: {title, body},
-    params: {id: postId}
+    user: { userId },
+    body: { title, body },
+    params: { id: postId }
   } = req;
   
   if (!title || !body) {
     throw new BadRequestError('This field cannot be left blank');
   }
 
-  const post = await Post.findOneAndUpdate({_id: postId, createdBy: userId}, {title, body}, {new: true, runValidators: true});
+  const post = await Post.findOneAndUpdate({_id: postId}, {title, body}, {new: true, runValidators: true});
 
   if (!post) {
     throw new NotFoundError('Post could not be found'); 
+  } else if (post.createdBy !== userId) {
+    throw new UnauthenticatedError('You are not authorized to modify this post');
   }
 
   res.status(StatusCodes.OK).json({post});
@@ -76,14 +77,16 @@ const updatePost = async (req, res) => {
 
 const deletePost = async (req, res) => {
   const {
-    user: {userId}, 
-    params: {id: postId}
+    user: { userId }, 
+    params: { id: postId }
   } = req;
 
-  const post = await Post.findOneAndDelete({_id: postId, createdBy: userId});
+  const post = await Post.findOneAndDelete({_id: postId});
 
   if (!post) {
     throw new NotFoundError('This post does not exist');
+  } else if (post.createdBy !== userId) {
+    throw new UnauthenticatedError('You are not authorized to delete this post');
   }
 
   res.status(StatusCodes.OK).json({post});

@@ -1,14 +1,14 @@
 const Comment = require('../models/Comment');
 const Post = require ('../models/Post');
 const {StatusCodes} = require('http-status-codes');
-const {BadRequestError, NotFoundError} = require('../errors');
+const {BadRequestError, NotFoundError, UnauthenticatedError} = require('../errors');
 
 const getComments = async (req, res) => {
   const postId = req.params.postId;
 
-  const post = await Post.find({_id: postId});
+  const parentPost = await Post.findOne({_id: postId});
 
-  if (post.length === 0) {
+  if (!parentPost) {
     throw new NotFoundError('This post does not exist.');
   }
 
@@ -34,13 +34,13 @@ const getComment = async (req, res) => {
     params: {postId, commentId} 
   } = req;
 
-  const post = await Post.find({_id: postId});
+  const parentPost = await Post.findOne({_id: postId});
 
-  if (post.length === 0) {
+  if (parentPost.length === 0) {
     throw new NotFoundError('This post does not exist.');
   }
    
-  const comment = await Comment.find({_id: commentId}); 
+  const comment = await Comment.findOne({_id: commentId}); 
   
   if (!comment) {
     throw new NotFoundError('This comment could not be found');
@@ -60,7 +60,7 @@ const  createComment = async (req, res) => {
     throw new BadRequestError('Please provide comment text');
   }
  
-  const parentPost = await Post.find({_id: postId});
+  const parentPost = await Post.findOne({_id: postId});
 
   if (!parentPost) {
     throw new NotFoundError('This post does not exist.');
@@ -82,10 +82,12 @@ const editComment = async (req, res) => {
     throw new BadRequestError('Please provide comment text');
   } 
 
-  const comment = await Comment.findOneAndUpdate({_id: commentId, madeBy: userId}, {text}, {new: true, runValidators: true});
+  const comment = await Comment.findOneAndUpdate({_id: commentId}, {text}, {new: true, runValidators: true});
 
   if(!comment) {
     throw new NotFoundError('This comment does not exist');
+  } else if (comment.madeBy !== userId) {
+    throw new UnauthenticatedError('You are not authorized to modify this comment');
   }
 
   res.status(StatusCodes.OK).json({comment});
@@ -97,10 +99,12 @@ const deleteComment = async (req, res) => {
     params: {commentId} 
   } = req;
  
-  const comment = await Comment.findOneAndDelete({_id: commentId, madeBy: userId});
+  const comment = await Comment.findOneAndDelete({_id: commentId});
 
   if(!comment) {
     throw new NotFoundError('This comment does not exist');
+  } else if (comment.madeBy !== userId) {
+    throw new UnauthenticatedError('You are not authorized to delete this comment');
   }
 
   res.status(StatusCodes.OK).json({comment});
