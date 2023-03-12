@@ -1,3 +1,9 @@
+### Live URLS
+
+[Root/Home Page](https://posts-api-767.onrender.com/)
+
+[Documentation](https://posts-api-767.onrender.com/api-docs/)
+
 #### Setup
 
 ```bash
