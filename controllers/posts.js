@@ -63,15 +63,22 @@ const updatePost = async (req, res) => {
     throw new BadRequestError('This field cannot be left blank');
   }
 
-  const post = await Post.findOneAndUpdate({_id: postId}, {title, body}, {new: true, runValidators: true});
+  const post = await Post.findOne({_id: postId});
 
   if (!post) {
     throw new NotFoundError('Post could not be found'); 
-  } else if (post.createdBy !== userId) {
+  }  
+  
+  if (post.createdBy.toString() !== userId) {
     throw new UnauthenticatedError('You are not authorized to modify this post');
   }
 
-  res.status(StatusCodes.OK).json({post});
+  post.title = title;
+  post.body = body;
+
+  const updatedPost = await post.save({new: true, runValidators: true});
+
+  res.status(StatusCodes.OK).json({updatedPost});
 };
 
 
@@ -81,15 +88,19 @@ const deletePost = async (req, res) => {
     params: { id: postId }
   } = req;
 
-  const post = await Post.findOneAndDelete({_id: postId});
+  const post = await Post.findOne({_id: postId});
 
   if (!post) {
     throw new NotFoundError('This post does not exist');
-  } else if (post.createdBy !== userId) {
-    throw new UnauthenticatedError('You are not authorized to delete this post');
-  }
+  } 
 
-  res.status(StatusCodes.OK).json({post});
+  if (post.createdBy.toString() !== userId) {
+    throw new UnauthenticatedError('You are not authorized to modify this post');
+  }
+  
+  const deletedPost = await post.deleteOne();
+  
+  res.status(StatusCodes.OK).json({deletedPost});
 }; 
 
 module.exports = {

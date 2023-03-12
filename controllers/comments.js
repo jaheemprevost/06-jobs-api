@@ -36,7 +36,7 @@ const getComment = async (req, res) => {
 
   const parentPost = await Post.findOne({_id: postId});
 
-  if (parentPost.length === 0) {
+  if (!parentPost) {
     throw new NotFoundError('This post does not exist.');
   }
    
@@ -82,15 +82,21 @@ const editComment = async (req, res) => {
     throw new BadRequestError('Please provide comment text');
   } 
 
-  const comment = await Comment.findOneAndUpdate({_id: commentId}, {text}, {new: true, runValidators: true});
+  const comment = await Comment.findOne({_id: commentId});
 
   if(!comment) {
     throw new NotFoundError('This comment does not exist');
-  } else if (comment.madeBy !== userId) {
+  } 
+  
+  if (comment.madeBy.toString() !== userId) {
     throw new UnauthenticatedError('You are not authorized to modify this comment');
   }
 
-  res.status(StatusCodes.OK).json({comment});
+  comment.text = text;
+
+  const editedComment = await comment.save({new: true, runValidators: true});
+
+  res.status(StatusCodes.OK).json({editedComment});
 };
 
 const deleteComment = async (req, res) => {
@@ -99,15 +105,19 @@ const deleteComment = async (req, res) => {
     params: {commentId} 
   } = req;
  
-  const comment = await Comment.findOneAndDelete({_id: commentId});
+  const comment = await Comment.findOne({_id: commentId});
 
   if(!comment) {
     throw new NotFoundError('This comment does not exist');
-  } else if (comment.madeBy !== userId) {
+  } 
+  
+  if (comment.madeBy.toString() !== userId) {
     throw new UnauthenticatedError('You are not authorized to delete this comment');
   }
 
-  res.status(StatusCodes.OK).json({comment});
+  const deletedComment = await comment.deleteOne();
+
+  res.status(StatusCodes.OK).json({deletedComment});
 };
 
 module.exports = {
