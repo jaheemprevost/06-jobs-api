@@ -1,0 +1,447 @@
+openapi: 3.0.0
+info:
+  title: Posts API
+  contact: {}
+  version: '1.0'
+servers:
+- url: https://posts-api-767.onrender.com/api/v1
+  variables: {}
+paths:
+  /auth/register:
+    post:
+      tags:
+      - Auth
+      summary: Register User
+      operationId: RegisterUser
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RegisterUserRequest'
+              - example:
+                  username: superman
+                  email: clarkkent@email.com
+                  password: superman123
+            example:
+              username: superman
+              email: clarkkent@email.com
+              password: superman123
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security: []
+  /auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Login User
+      operationId: LoginUser
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/LoginUserRequest'
+              - example:
+                  email: clarkkent@email.com
+                  password: superman123
+            example:
+              email: clarkkent@email.com
+              password: superman123
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security: []
+  /posts:
+    get:
+      tags:
+      - Posts
+      summary: Get All Posts
+      operationId: GetAllPosts
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+    post:
+      tags:
+      - Posts
+      summary: Create Post
+      operationId: CreatePost
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreatePostRequest'
+              - example:
+                  title: I should be considered a speedster.
+                  body: I may not have access to the speedforce, but I'm pretty darn fast already without it.
+            example:
+              title: I should be considered a speedster.
+              body: I may not have access to the speedforce, but I'm pretty darn fast already without it.
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /posts/{postId}:
+    get:
+      tags:
+      - Posts
+      summary: Get Single Post
+      operationId: GetSinglePost
+      parameters:
+      - name: postId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+    patch:
+      tags:
+      - Posts
+      summary: Update Post
+      operationId: UpdatePost
+      parameters:
+      - name: postId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpdatePostRequest'
+              - example:
+                  title: I should be considered a speedster.
+                  body: Alright, I'd like to retract that statement.
+            example:
+              title: I should be considered a speedster.
+              body: Alright, I'd like to retract that statement.
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+    delete:
+      tags:
+      - Posts
+      summary: Delete Post
+      operationId: DeletePost
+      parameters:
+      - name: postId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /posts/my-posts:
+    get:
+      tags:
+      - Posts
+      summary: Get My Posts
+      operationId: GetMyPosts
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /posts/{postId}/comments:
+    get:
+      tags:
+      - Comments
+      summary: Get All Comments
+      operationId: GetAllComments
+      parameters:
+      - name: postId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+    post:
+      tags:
+      - Comments
+      summary: Create Comment
+      operationId: CreateComment
+      parameters:
+      - name: postId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateCommentRequest'
+              - example:
+                  text: You? A speedster? Don't me make laugh. Even Wallace is faster than you.
+            example:
+              text: You? A speedster? Don't me make laugh. Even Wallace is faster than you.
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+  /posts/{postId}/comments/{commentId}:
+    delete:
+      tags:
+      - Comments
+      summary: Delete Comment
+      operationId: DeleteComment
+      parameters:
+      - name: postId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      - name: commentId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+    patch:
+      tags:
+      - Comments
+      summary: Edit Comment
+      operationId: EditComment
+      parameters:
+      - name: postId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      - name: commentId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/EditCommentRequest'
+              - example:
+                  text: LoL.
+            example:
+              text: LoL.
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+    get:
+      tags:
+      - Comments
+      summary: Get Comment
+      operationId: GetComment
+      parameters:
+      - name: postId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      - name: commentId
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: 'null'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+      - bearer: []
+components:
+  schemas:
+    RegisterUserRequest:
+      title: RegisterUserRequest
+      required:
+      - username
+      - email
+      - password
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      example:
+        username: superman
+        email: clarkkent@email.com
+        password: superman123
+    LoginUserRequest:
+      title: LoginUserRequest
+      required:
+      - email
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      example:
+        email: clarkkent@email.com
+        password: superman123
+    CreatePostRequest:
+      title: CreatePostRequest
+      required:
+      - title
+      - body
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+      example:
+        title: I should be considered a speedster.
+        body: I may not have access to the speedforce, but I'm pretty darn fast already without it
+    UpdatePostRequest:
+      title: UpdatePostRequest
+      required:
+      - title
+      - body
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+      example:
+        title: I should be considered a speedster.
+        body: Alright, I'd like to retract that statement.
+    CreateCommentRequest:
+      title: CreateCommentRequest
+      required:
+      - text
+      type: object
+      properties:
+        text:
+          type: string
+      example:
+        text: You? A speedster? Don't me make laugh. Even Wallace is faster than you.
+    EditCommentRequest:
+      title: EditCommentRequest
+      required:
+      - text
+      type: object
+      properties:
+        text:
+          type: string
+      example:
+        text: LoL.
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+security: []
+tags:
+- name: Auth
+  description: ''
+- name: Posts
+  description: ''
+- name: Comments
+  description: ''
