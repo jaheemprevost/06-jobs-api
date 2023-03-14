@@ -1,9 +1,9 @@
 const Post = require('../models/Post'); 
 const { StatusCodes } = require('http-status-codes');
-const { BadRequestError, NotFoundError } = require('../errors');
+const { BadRequestError, NotFoundError, UnauthenticatedError } = require('../errors');
 
 const getAllPosts = async (req, res) => {
-  const posts = await Post.find({});
+  const posts = await Post.find({}).sort('createdAt');
 
   if (posts.length === 0) {
     return res.status(StatusCodes.OK).json({message: 'There are no posts. Be the first!'});
@@ -13,7 +13,11 @@ const getAllPosts = async (req, res) => {
 };
 
 const getPost = async (req, res) => {
-  const post = await Post.findOne({ _id: req.params.id });
+  const {
+    params: {id: postId}
+  } = req;
+  
+  const post = await Post.findOne({ _id: postId});
 
   if (!post) {
     throw new NotFoundError('Post could not be found');
@@ -23,7 +27,7 @@ const getPost = async (req, res) => {
 };
 
 const getMyPosts = async (req, res) => { 
-  const myPosts = await Post.find({createdBy: req.user.userId});
+  const myPosts = await Post.find({createdBy: req.user.userId}).sort('createdAt');
 
   if (myPosts.length === 0) {
     return res.status(StatusCodes.OK).json({message: 'You have no posts'});
@@ -33,41 +37,70 @@ const getMyPosts = async (req, res) => {
 };
 
 const createPost = async (req, res) => {
-  const { title, body } = req.body;
+  req.body.createdBy = req.user.userId;
+  
+  const { 
+    body: { title, body, createdBy }  
+  } = req;
   
   if (!title || !body) {
     throw new BadRequestError('This field cannot be left blank');
-  }
-
-  req.body.createdBy = req.user.userId;
-
-  const post = await Post.create(req.body);
+  } 
+  
+  const post = await Post.create({title, body, createdBy});
 
   res.status(StatusCodes.CREATED).json({post});
 };
  
 const updatePost = async (req, res) => {
-  const { title, body } = req.body;
+  const {
+    user: { userId },
+    body: { title, body },
+    params: { id: postId }
+  } = req;
   
   if (!title || !body) {
     throw new BadRequestError('This field cannot be left blank');
   }
 
-  const post = await Post.findOneAndUpdate({_id: req.params.id}, {title, body}, {new: true});
+  const post = await Post.findOne({_id: postId});
 
+  if (!post) {
+    throw new NotFoundError('Post could not be found'); 
+  }  
+  
+  if (post.createdBy.toString() !== userId) {
+    throw new UnauthenticatedError('You are not authorized to modify this post');
+  }
 
-  res.status(StatusCodes.OK).json({post});
+  post.title = title;
+  post.body = body;
+
+  const updatedPost = await post.save({new: true, runValidators: true});
+
+  res.status(StatusCodes.OK).json({updatedPost});
 };
 
 
 const deletePost = async (req, res) => {
-  const post = await Post.findOneAndDelete({_id: req.params.id});
+  const {
+    user: { userId }, 
+    params: { id: postId }
+  } = req;
+
+  const post = await Post.findOne({_id: postId});
 
   if (!post) {
     throw new NotFoundError('This post does not exist');
-  }
+  } 
 
-  res.status(StatusCodes.OK).json({post});
+  if (post.createdBy.toString() !== userId) {
+    throw new UnauthenticatedError('You are not authorized to modify this post');
+  }
+  
+  const deletedPost = await post.deleteOne();
+  
+  res.status(StatusCodes.OK).json({deletedPost});
 }; 
 
 module.exports = {
