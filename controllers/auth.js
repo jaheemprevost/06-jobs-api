@@ -4,11 +4,13 @@ const {BadRequestError, UnauthenticatedError} = require('../errors');
 const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
-  const user = await User.create({...req.body});
+  const user = await User.create(req.body);
   
   const token = user.createJWT();
 
-  res.status(StatusCodes.CREATED).json({name: user.username,token});
+  console.log('reach');
+  console.log(token, user)
+  res.status(StatusCodes.CREATED).json({user: {name: user.username}, token});
 }
 
 const login = async (req, res) => {
@@ -32,7 +34,7 @@ const login = async (req, res) => {
 
   const token = user.createJWT();
 
-  res.status(StatusCodes.OK).json({ user: {name: user.username}, token});
+  res.status(StatusCodes.OK).json({user: {name: user.username}, token});
 }
 
 module.exports = {

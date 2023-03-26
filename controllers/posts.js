@@ -29,11 +29,11 @@ const getPost = async (req, res) => {
 const getMyPosts = async (req, res) => { 
   const myPosts = await Post.find({createdBy: req.user.userId}).sort('createdAt');
 
-  if (myPosts.length === 0) {
+  /*if (myPosts.length === 0) {
     return res.status(StatusCodes.OK).json({message: 'You have no posts'});
-  }
+  }*/
 
-  res.status(StatusCodes.OK).json({myPosts});
+  res.status(StatusCodes.OK).json({posts: myPosts, count: myPosts.length});
 };
 
 const createPost = async (req, res) => {
@@ -78,7 +78,7 @@ const updatePost = async (req, res) => {
 
   const updatedPost = await post.save({new: true, runValidators: true});
 
-  res.status(StatusCodes.OK).json({updatedPost});
+  res.status(StatusCodes.OK).json({post: updatedPost});
 };
 
 
@@ -100,7 +100,7 @@ const deletePost = async (req, res) => {
   
   const deletedPost = await post.deleteOne();
   
-  res.status(StatusCodes.OK).json({deletedPost});
+  res.status(StatusCodes.OK).json({msg: "The entry was deleted."});
 }; 
 
 module.exports = {
